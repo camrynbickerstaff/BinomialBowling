@@ -1,7 +1,7 @@
 
 public class BinomialBowling {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 		// TODO Auto-generated method stub
 		
 		int N = 10;
@@ -10,12 +10,13 @@ public class BinomialBowling {
 		int M = 10;
 		
 		
-		int[] game = playBinomialBowlingGame(M, N, p1, p2);
+		int[] game = playRandomBowlingGame(M, N, p1, p2);
 		int score = 0;
 		double avg = 0;
-		for(int j = 0; j < 1000000; j++)
+		for(int j = 1; j < 10000; j++)
 		{
 			score = 0;
+			game = playRandomBowlingGame(M, N, p1, p2);
 			for(int i = 0; i < M; i++)
 			{
 				System.out.println(game[i]);
@@ -71,88 +72,195 @@ public class BinomialBowling {
 		return toReturn;
 	}
 	
-	private static int[] playBinomialBowlingGame(int M, int N, double p1, double p2)
+	private static int[] playRandomBowlingGame(int M, int N, double p1, double p2) throws InterruptedException
 	{
 		int[] scoreByFrame = new int[M];
 		int[][] rolls = new int[M][2];
 		double score = 0;
 		int lastFrame3 = 0;
-		
+		//Getting Score for Each Frame except last frame
 		for(int i = 0; i < M; i++)
 		{	
-			int firstRoll = 0;
-			for(int j = 0; j < 10; j++)
+			if(i < M-1)
 			{
-				//System.out.println((int)(Math.random()*(2)));
-				if((int)(Math.random()*(2)) == 1)
-				{
-					firstRoll++;
-				}
-				
+				int[] frameBalls = roll2BallFrame(N);
+				//Setting score of first and second rolls in the array
+				rolls[i][0] = frameBalls[0];
+				rolls[i][1] = frameBalls[1];
+				//Adds together two balls and puts into array
+				scoreByFrame[i] = rolls[i][0] + rolls[i][1];
 			}
-			//System.out.println(firstRoll);
-			int secondRoll = 0;
-			for(int j = 0; j < N - firstRoll; j++)
+			//Last frame has a potential 3 balls
+			else if(i == M-1)
 			{
-				if((int)(Math.random()*(2)) == 1)
+				int firstRoll;
+				int secondRoll = 0;
+				int thirdRoll = 0;
+				//Rolls first ball
+				firstRoll = roll1Ball(N);
+				//Checks if first ball was strike
+				if(firstRoll == N)
 				{
-					secondRoll++;
-				}
-			}
-			rolls[i][0] = firstRoll;
-			rolls[i][1] = secondRoll;
-			if(i == M-1)
-			{
-				if(firstRoll + secondRoll == N)
-				{
-					for(int j = 0; j < N - firstRoll; j++)
+					secondRoll = roll1Ball(N);
+					//if second ball is also strike
+					if(secondRoll == N)
 					{
-						if((int)Math.random()*(2) + 1 == 2)
-						{
-							lastFrame3++;
-						}
+						thirdRoll = roll1Ball(N);
+					}
+					//if second ball is not a strike
+					else if(secondRoll < N)
+					{
+						thirdRoll = roll1Ball(N-secondRoll);
 					}
 				}
+				//Checks if first ball was not a strike
+				else if(firstRoll < N)
+				{
+					secondRoll = roll1Ball(N-firstRoll);
+					//if second ball was a spare
+					if(secondRoll + firstRoll == N)
+					{
+						thirdRoll = roll1Ball(N);
+					}
+				}
+				rolls[i][0] = firstRoll;
+				rolls[i][1] = secondRoll;
+				lastFrame3 = thirdRoll;
+				scoreByFrame[i] = 0;
+				
+				
 			}
-			scoreByFrame[i] = firstRoll + secondRoll;
 		}
+	
+		//Checking and accounting for spares and strikes
 		for(int i = 0; i < M; i++)
 		{
-			for(int j = 0; j < 2; j++)
+			//if all pins are knocked down and it is not the last frame
+			if(rolls[i][0] + rolls[i][1] == N && i < M-1)
 			{
-				System.out.print(rolls[i][j]);
-			}
-			System.out.println();
-		}
-		for(int i = 0; i < M; i++)
-		{
-			if(rolls[i][0] + rolls[i][1] == N)
-			{
+				//if strike
 				if(rolls[i][0] == N)
 				{
+					//if next ball is a strike
 					if(i+1 < M && rolls[i+1][0] == N)
 					{
 						scoreByFrame[i] = scoreByFrame[i] + N;
+						//if next frame is there, adds next ball
 						if(i+2 < M)
 						{
 							scoreByFrame[i] = scoreByFrame[i] + rolls[i+2][0];
 						}
 					}
+					//if next ball is not a strike, adds next 2 balls
 					else if(i+1 < M && rolls[i+1][0] < N)
 					{
-						scoreByFrame[i] = scoreByFrame[i] + rolls[i+1][0];
+						scoreByFrame[i] = scoreByFrame[i] + rolls[i+1][0] + rolls[i+1][1];
 					}
 				}
+				//if spare
 				else if(rolls[i][0] + rolls[i][1] == N)
 				{
+					//if next frame is there, adds next ball
 					if(i+1 < M)
 					{
 						scoreByFrame[i] = scoreByFrame[i] + rolls[i+1][0];
 					}
 				}
 			}
+			//if it is the last frame
+			else if(i == M-1)
+			{
+				//if first ball is a strike
+				if(rolls[i][0] == N)
+				{
+					//adds N and next two rolls
+					scoreByFrame[i] = scoreByFrame[i] + N + rolls[i][1] + lastFrame3; 
+					//if second ball is a strike
+					if(rolls[i][1] == N)
+					{
+						//adds N and next roll
+						scoreByFrame[i] = scoreByFrame[i] + N + lastFrame3;
+					}
+					//if second ball is not a strike adds second and third ball
+					else if(rolls[i][1] < N)
+					{
+						scoreByFrame[i] = scoreByFrame[i] + rolls[i][1] + lastFrame3;
+					}
+				}
+				//if first ball is not a strike
+				else if(rolls[i][0] < N)
+				{
+					//if spare on second ball
+					if(rolls[i][0] + rolls[i][1] == N)
+					{
+						scoreByFrame[i] = scoreByFrame[i] + 10 + lastFrame3;
+					}
+					//if not spare on second ball
+					else if(rolls[i][0] + rolls[i][1] < N)
+					{
+						scoreByFrame[i] = scoreByFrame[i] + rolls[i][0] + rolls[i][1];
+					}
+				}
+			}
 		}
+	/*	if(rolls[M-1][0] == 10 && rolls[M-1][1] == 10)
+		{
+			for(int i = 0; i < M; i++)
+			{
+				for(int j = 0; j < 2; j++)
+				{
+					System.out.print(rolls[i][j]);
+				}
+				System.out.print("");
+				if(i == M-1)
+					System.out.print(" " + lastFrame3);
+				System.out.println("\t" + scoreByFrame[i]);
+			}
+			Thread.sleep(3000);
+		}
+		System.out.println("");*/
 		return scoreByFrame;
+	}
+	
+	public static int[] roll2BallFrame(int N)
+	{
+		int[] toReturn = new int[2];
+		int firstRoll = 0;
+		for(int j = 0; j < N; j++)
+		{
+			if((int)(Math.random()*(2)) == 1)
+			{
+				firstRoll++;
+			}
+			
+		}
+		int secondRoll = 0;
+		//Getting score for second ball
+		for(int j = 0; j < N - firstRoll; j++)
+		{
+			if((int)(Math.random()*(2)) == 1)
+			{
+				secondRoll++;
+			}
+		}
+		toReturn[0] = firstRoll;
+		toReturn[1] = secondRoll;
+		return toReturn;
+		
+	}
+	public static int roll1Ball(int N)
+	{
+		int firstRoll = 0;
+		for(int j = 0; j < N; j++)
+		{
+			if((int)(Math.random()*(2)) == 1)
+			{
+				firstRoll++;
+			}
+			
+		}
+		return firstRoll;
+		
 	}
 	
 }
