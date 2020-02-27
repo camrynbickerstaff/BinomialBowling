@@ -6,17 +6,16 @@ public class BinomialBowling {
 		
 		int N = 10;
 		double p1 = .5;
-		double p2 = 1 - p1;
 		int M = 10;
 		
 		
-		int[] game = playBinomialBowlingGame(M, N, p1, p2);
+		int[] game = playBinomialBowlingGame(M, N, p1);
 		int score = 0;
 		double avg = 0;
-		for(int j = 1; j < 10000000; j++)
+		for(int j = 1; j < 100000; j++)
 		{
 			score = 0;
-			game = playBinomialBowlingGame(M, N, p1, p2);
+			game = playBinomialBowlingGame(M, N, p1);
 			for(int i = 0; i < M; i++)
 			{
 				//System.out.println(game[i]);
@@ -36,53 +35,55 @@ public class BinomialBowling {
 	
 	//Binomial Bowling
 	//Binomial Bowling Math
-	private static double getAverageScoreOverMFrames(int M, int N, double p1, double p2)
+	private static double getAverageScoreOverMFrames(int M, int N, double p1)
 	{
 		double toReturn;
-		toReturn = M * getAverageScoreForAFrame(N, p1, p2);
+		toReturn = M * getAverageScoreForAFrame(N, p1);
 		return toReturn;
 	}
-	private static double getAverageScoreForAFrame(int N, double p1, double p2)
+	private static double getAverageScoreForAFrame(int N, double p1)
 	{
 		double toReturn = 0;
-		toReturn = getAverageSumOfTwoRolls(N, p1, p2) + getAverageAdditionPerFrameSpares(N, p1, p2) + getAverageAdditionPerFrameOneStrike(N, p1, p2) + getAverageAdditionPerFrameTwoStrikes(N, p1, p2); 
+		toReturn = getAverageSumOfTwoRolls(N, p1) + getAverageAdditionPerFrameSpares(N, p1) + getAverageAdditionPerFrameOneStrike(N, p1) + getAverageAdditionPerFrameTwoStrikes(N, p1); 
 		return toReturn;
 	}
 	
-	private static double getAverageAdditionPerFrameSpares(int N, double p1, double p2)
+	private static double getAverageAdditionPerFrameSpares(int N, double p1)
 	{
 		double toReturn;
+		double p2 = 1-p1;
 		toReturn = N * p1 * (Math.pow((p1 + p2 - p1 * p2), (double)N) - Math.pow(p1,  (double) N));
 		return toReturn;
 	}
 	
-	private static double getAverageSumOfTwoRolls(int N, double p1, double p2)
+	private static double getAverageSumOfTwoRolls(int N, double p1)
 	{
 		double toReturn;
+		double p2 = 1-p1;
 		toReturn = N * (p1 + p2 - p1 * p2)	;
 		return toReturn;
 	}
 	
-	private static double getAverageAdditionPerFrameOneStrike(int N, double p1, double p2)
+	private static double getAverageAdditionPerFrameOneStrike(int N, double p1)
 	{
 		double toReturn;
+		double p2 = 1-p1;
 		toReturn = Math.pow(p1, (double)N) * (N * (p1 + p2 - p1*p2) - N * Math.pow(p1, (double)N));
 		return toReturn;
 	}
 	
-	private static double getAverageAdditionPerFrameTwoStrikes(int N, double p1, double p2)
+	private static double getAverageAdditionPerFrameTwoStrikes(int N, double p1)
 	{
 		double toReturn;
 		toReturn = N * (1 + p1) * Math.pow(p1, (double)N);
 		return toReturn;
 	}
 	
-	
-	private static int[] playBinomialBowlingGame(int M, int N, double p1, double p2) throws InterruptedException
+	//Simulate Binomial Bowling Game
+	private static int[] playBinomialBowlingGame(int M, int N, double p1) throws InterruptedException
 	{
 		int[] scoreByFrame = new int[M];
 		int[][] rolls = new int[M][2];
-		double score = 0;
 		int lastFrame3 = 0;
 		//Getting Score for Each Frame
 		for(int i = 0; i < M; i++)
@@ -186,8 +187,7 @@ public class BinomialBowling {
 				scoreByFrame[i] = scoreByFrame[i] + rolls[i][0] + rolls[i][1] + lastFrame3;
 			}
 		}
-	//	if(rolls[M-1][0] == 10 && rolls[M-1][1] == 10)
-	/*	//{
+		
 			for(int i = 0; i < M; i++)
 			{
 				for(int j = 0; j < 2; j++)
@@ -199,19 +199,20 @@ public class BinomialBowling {
 					System.out.print(" " + lastFrame3);
 				System.out.println("\t" + scoreByFrame[i]);
 			}
-			//Thread.sleep(3000);
-		//}*/
-		System.out.println("");
+	
 		return scoreByFrame;
 	}
+	
+	//Roll entire Binomial Bowling frame
 	public static int[] roll2BinomialBallFrame(int N, double p1) throws InterruptedException
 	{
 		int[] toReturn = new int[2];
-		p1 = Math.floor(p1*1000);
+		p1 = Math.floor(p1*1000000);
 		int firstRoll = 0;
+		//Getting score for first ball
 		for(int j = 0; j < N; j++)
 		{
-			if((int)(Math.random()*(1001)) <= p1)
+			if((int)(Math.random()*(1000001)) <= p1)
 			{
 				firstRoll++;
 			}
@@ -221,7 +222,7 @@ public class BinomialBowling {
 		//Getting score for second ball
 		for(int j = 0; j < N - firstRoll; j++)
 		{
-			if((int)(Math.random()*(1001)) > p1)
+			if((int)(Math.random()*(1000001)) <= p1)
 			{
 				secondRoll++;
 			}
@@ -231,13 +232,16 @@ public class BinomialBowling {
 		return toReturn;
 		
 	}
+	
+	//Roll just one Binomial Bowling ball
 	public static int roll1BinomialBall(int N, double p1)
 	{
-		p1 = Math.floor(p1*1000);
+		p1 = Math.floor(p1*1000000);
 		int firstRoll = 0;
+		//getting score for first ball
 		for(int j = 0; j < N; j++)
 		{
-			if((int)(Math.random()*(1001)) >= p1)
+			if((int)(Math.random()*(1000001)) <= p1)
 			{
 				firstRoll++;
 			}
@@ -262,14 +266,13 @@ public class BinomialBowling {
 	
 	
 	
-	//Binomial Bowling
+	//Binomial Bowling but p1 = .5. Another Way of calculating each frame
 	
 	//Each pin has 50/50 chance of falling over
-	private static int[] play5050RandomBowlingGame(int M, int N, double p1, double p2) throws InterruptedException
+	private static int[] play5050BinomialBowlingGame(int M, int N, double p1) throws InterruptedException
 	{
 		int[] scoreByFrame = new int[M];
 		int[][] rolls = new int[M][2];
-		double score = 0;
 		int lastFrame3 = 0;
 		//Getting Score for Each Frame
 		for(int i = 0; i < M; i++)
@@ -373,9 +376,7 @@ public class BinomialBowling {
 				scoreByFrame[i] = scoreByFrame[i] + rolls[i][0] + rolls[i][1] + lastFrame3;
 			}
 		}
-	//	if(rolls[M-1][0] == 10 && rolls[M-1][1] == 10)
-		//{
-	/*		for(int i = 0; i < M; i++)
+		/*	for(int i = 0; i < M; i++)
 			{
 				for(int j = 0; j < 2; j++)
 				{
@@ -386,13 +387,12 @@ public class BinomialBowling {
 					System.out.print(" " + lastFrame3);
 				System.out.println("\t" + scoreByFrame[i]);
 			}
-			//Thread.sleep(3000);
-		//}*/
+			*/
 		System.out.println("");
 		return scoreByFrame;
 	}
 	
-	
+	//Calculates each frame by going through every pin and doing 5050
 	public static int[] roll25050BallFrame(int N)
 	{
 		int[] toReturn = new int[2];
@@ -419,6 +419,8 @@ public class BinomialBowling {
 		return toReturn;
 		
 	}
+	
+	//Calculates one ball using 5050 chance for each pin
 	public static int roll15050Ball(int N)
 	{
 		int firstRoll = 0;
@@ -442,11 +444,10 @@ public class BinomialBowling {
 	
 	
 	//Number of pins knocked down is chosen randomly from 1-n (n number of pins)
-	private static int[] play110RandomBowlingGame(int M, int N, double p1, double p2) throws InterruptedException
+	private static int[] play110RandomBowlingGame(int M, int N) throws InterruptedException
 	{
 		int[] scoreByFrame = new int[M];
 		int[][] rolls = new int[M][2];
-		double score = 0;
 		int lastFrame3 = 0;
 		//Getting Score for Each Frame
 		for(int i = 0; i < M; i++)
@@ -550,8 +551,8 @@ public class BinomialBowling {
 				scoreByFrame[i] = scoreByFrame[i] + rolls[i][0] + rolls[i][1] + lastFrame3;
 			}
 		}
-	//	if(rolls[M-1][0] == 10 && rolls[M-1][1] == 10)
-		//{
+		
+		
 			for(int i = 0; i < M; i++)
 			{
 				for(int j = 0; j < 2; j++)
@@ -563,9 +564,6 @@ public class BinomialBowling {
 					System.out.print(" " + lastFrame3);
 				System.out.println("\t" + scoreByFrame[i]);
 			}
-			//Thread.sleep(3000);
-		//}
-		System.out.println("");
 		return scoreByFrame;
 	}
 	
