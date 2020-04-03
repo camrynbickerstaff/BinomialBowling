@@ -4,15 +4,15 @@ public class BinomialBowling {
 	public static void main(String[] args) throws InterruptedException {
 		
 		int N = 10;
-		double p1 = .5;
-		double p2 = .5;
+		double p1 = .9;
+		double p2 = .7;
 		int M = 10;
 		
 		
 		int[] game = playBinomialBowling2Game(M, N,p1,p2);
 		int score = 0;
 		double avg = 0;
-		for(int j = 1; j < 100000; j++)
+		for(int j = 1; j < 10000; j++)
 		{
 			score = 0;
 			game = playBinomialBowling2Game(M, N,p1,p2);
@@ -23,8 +23,8 @@ public class BinomialBowling {
 				
 			}
 			avg = avg + score;
-			//System.out.println("Score: " + score);
-			System.out.println(avg/j);
+			System.out.println("Score: " + score + "\n");
+			System.out.println(avg/j + "\n");
 		}
 		
 		System.out.println(calculateAverageScorePerGameBinomialBowling2(M,N,p1,p2));
@@ -83,6 +83,7 @@ public class BinomialBowling {
 		int[] scoreByFrame = new int[M];
 		int[][] rolls = new int[M][2];
 		int lastFrame3 = 0;
+		int lastFrame4 = 0;
 		//Getting Score for Each Frame
 		for(int i = 0; i < M; i++)
 		{	//if it is not the last frame
@@ -96,12 +97,13 @@ public class BinomialBowling {
 				//Adds together two balls and puts into array
 				scoreByFrame[i] = rolls[i][0] + rolls[i][1];
 			}
-			//Last frame has a potential 3 balls
+			//Last frame has a potential 4 balls
 			else if(i == M-1)
 			{
-				int firstRoll;
+				int firstRoll = 0;
 				int secondRoll = 0;
 				int thirdRoll = 0;
+				int fourthRoll = 0;
 				//Rolls first ball
 				firstRoll = roll1BinomialBall(N, p1);
 				//firstRoll = roll15050Ball(N);
@@ -109,35 +111,52 @@ public class BinomialBowling {
 				if(firstRoll == N)
 				{
 					secondRoll = roll1BinomialBall(N, p1);
-					//secondRoll = roll15050Ball(N);
 					//if second ball is also strike
 					if(secondRoll == N)
 					{
 						thirdRoll = roll1BinomialBall(N, p1);
-						//thirdRoll = roll15050Ball(N);
+						//if third ball is also a strike
+						if(thirdRoll == N)
+						{
+							fourthRoll = roll1BinomialBall(N, p1);
+						}
+						else if(thirdRoll < N)
+						{
+							fourthRoll = roll1BinomialBall(N-thirdRoll, p2);
+						}
 					}
 					//if second ball is not a strike
 					else if(secondRoll < N)
 					{
 						thirdRoll = roll1BinomialBall(N-secondRoll, p2);
-						//thirdRoll = roll15050Ball(N);
+						if(secondRoll + thirdRoll == N)
+						{
+							fourthRoll = roll1BinomialBall(N,p1);
+						}
 					}
 				}
 				//Checks if first ball was not a strike
 				else if(firstRoll < N)
 				{
 					secondRoll = roll1BinomialBall(N-firstRoll, p2);
-					//secondRoll = roll15050Ball(N-firstRoll);
 					//if second ball was a spare
 					if(secondRoll + firstRoll == N)
 					{
 						thirdRoll = roll1BinomialBall(N, p1);
-						//thirdRoll = roll15050Ball(N);
+						if(thirdRoll == N)
+						{
+							fourthRoll = roll1BinomialBall(N, p1);
+						}
+						else if(thirdRoll < N)
+						{
+							fourthRoll = roll1BinomialBall(N-thirdRoll,p2);
+						}
 					}
 				}
 				rolls[i][0] = firstRoll;
 				rolls[i][1] = secondRoll;
 				lastFrame3 = thirdRoll;
+				lastFrame4 = fourthRoll;
 				//will handle score of final frame later
 				scoreByFrame[i] = 0;
 			}
@@ -217,11 +236,11 @@ public class BinomialBowling {
 			//if it is the last frame
 			else if(i == M-1)
 			{
-				scoreByFrame[i] = scoreByFrame[i] + rolls[i][0] + rolls[i][1] + lastFrame3;
+				scoreByFrame[i] = scoreByFrame[i] + rolls[i][0] + rolls[i][1] + lastFrame3 + lastFrame4;
 			}
 		}
-		System.out.println("Frame\t1st\t2nd\t3rd\tTotal");
-		System.out.println("-----|-------------------------------");
+		System.out.println("Frame\t1st\t2nd\t3rd\t4th\tTotal");
+		System.out.println("-----|-------------------------------------");
 		for(int i = 0; i < M; i++)
 		{
 			if(i < 9)
@@ -237,11 +256,11 @@ public class BinomialBowling {
 			}
 			System.out.print("");
 			if(i >= M-1)
-			{	System.out.print("\t" + lastFrame3);
+			{	System.out.print("\t" + lastFrame3 + "\t" + lastFrame4);
 				System.out.println("\t" + scoreByFrame[i]); 
 			}
 			else
-				System.out.println("\t\t" + scoreByFrame[i]); 
+				System.out.println("\t\t\t" + scoreByFrame[i]); 
 		}
 	
 		return scoreByFrame;
@@ -255,23 +274,29 @@ public class BinomialBowling {
 		p2 = p2*10000000;
 		int firstRoll = 0;
 		//Getting score for first ball
+		//Loop 1
 		for(int j = 0; j < N; j++)
 		{
+			//if statement
 			if((int)(Math.random()*(10000001)) <= p1)
 			{
-				firstRoll++;
+				firstRoll = firstRoll + 1;
 			}
 			
 		}
+		//End Loop 1
 		int secondRoll = 0;
 		//Getting score for second ball
+		//Loop 2
 		for(int j = 0; j < N - firstRoll; j++)
 		{
+			//if statement
 			if((int)(Math.random()*(10000001)) <= p2)
 			{
-				secondRoll++;
+				secondRoll = secondRoll + 1;
 			}
 		}
+		//End Loop 2
 		toReturn[0] = firstRoll;
 		toReturn[1] = secondRoll;
 		return toReturn;
@@ -306,10 +331,10 @@ public class BinomialBowling {
 	{
 		double result = 0;
 		result = getAverageSumOfTwoRolls(N,p1,p2) + (probabilityOfSpare2(N,p1,p2)*probabilityOfStrike2(N,p1,p2))*(N + N*p1) + (probabilityOfSpare2(N,p1,p2)*probabilityOfNotStrike2(N,p1,p2))*(((N*(p1 + p2 - (p1*p2)) - N*(Math.pow(p1, (double)N))))) + (probabilityOfStrike2(N,p1,p2)*probabilityOfStrike2(N,p1,p2)*probabilityOfNotStrike2(N,p1,p2))*(N + ((N*(p1 + p2 - (p1*p2)) - N*(Math.pow(p1, (double)N))))) + (probabilityOfStrike2(N,p1,p2)*probabilityOfNotStrike2(N,p1,p2))*(((N*(p1 + p2 - (p1*p2)) - N*Math.pow(p1, (double)N))) + N*p1) + (probabilityOfStrike2(N,p1,p2)*probabilityOfStrike2(N,p1,p2)*probabilityOfStrike2(N,p1,p2))*(2*N + N*p1);
-		System.out.println("Expectation of frame given not strike: " + ((N*(p1 + p2 - (p1*p2)) - N*(Math.pow(p1, (double)N)))));
-		System.out.println("Expectation of Strike: " + N );
-		System.out.println("Expectation of Single ball: " + N*p1 );
-		System.out.println("Average Score per frame: " + result);
+		//System.out.println("Expectation of frame given not strike: " + ((N*(p1 + p2 - (p1*p2)) - N*(Math.pow(p1, (double)N)))));
+		//System.out.println("Expectation of Strike: " + N );
+		//System.out.println("Expectation of Single ball: " + N*p1 );
+		//System.out.println("Average Score per frame: " + result);
 		return result;
 	}
 	
@@ -317,7 +342,7 @@ public class BinomialBowling {
 	{
 		double result = 0;
 		result = Math.pow(p1, (double)N);
-		System.out.println("Probability of strike: " + result);
+		//System.out.println("Probability of strike: " + result);
 		return result;
 	}
 	
@@ -325,7 +350,7 @@ public class BinomialBowling {
 	{
 		double result = 0;
 		result = Math.pow(((p1 + p2) - (p1*p2)), (double)N) - (Math.pow(p1, (double)N));
-		System.out.println("Probability of spare: " + result);
+		//System.out.println("Probability of spare: " + result);
 		return result;
 	}
 	
@@ -333,7 +358,7 @@ public class BinomialBowling {
 	{
 		double result = 0;
 		result = (1 - probabilityOfStrike2(N, p1, p2));
-		System.out.println("Probability of not strike: " + result);
+		//System.out.println("Probability of not strike: " + result);
 		return result;
 	}
 	
